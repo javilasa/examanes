@@ -1,5 +1,4 @@
-# DDEV local development environment
-.ddev/
+
 
 # Database snapshots
 db_snapshots/
