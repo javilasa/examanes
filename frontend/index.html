@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Examen - Login</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Bienvenido al Examen</h1>
+
+        <div id="exam-code-section">
+            <input type="text" id="examCode" placeholder="Código de Acceso" required autocomplete="off">
+            <input type="text" id="studentCode" placeholder="Código de Estudiante" required autocomplete="off">
+            <button id="examEntryForm">Verificar Examen</button>
+            <p id="exam-message" class="message"></p>
+        </div>
+
+        <div id="exam-details-section" style="display: none;">
+            <h2 id="exam-name"></h2>
+            <button id="start-exam-btn">Iniciar Examen</button>
+        </div>
+    </div>
+    <input type="hidden" id="exam-group">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/init_exam.js"></script>
+</body>
+</html>

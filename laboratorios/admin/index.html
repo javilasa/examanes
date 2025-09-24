@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Laboratorios</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../frontend/css/admin.css">
+</head>
+<body>
+    <div class="container-fluid mt-4" id="main-content" style="display: none;">
+        <h1>Gestión de Laboratorios</h1>
+
+        <ul class="nav nav-tabs" id="adminTabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="laboratorios-tab" data-toggle="tab" href="#laboratorios" role="tab">Laboratorios</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="items-tab" data-toggle="tab" href="#items" role="tab">Items</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="revisar-tab" data-toggle="tab" href="#revisar" role="tab">Revisar</a>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="adminTabsContent">
+            <!-- Laboratorios Tab -->
+            <div class="tab-pane fade show active" id="laboratorios" role="tabpanel">
+                <div class="row mt-3">
+                    <div class="col-md-4">
+                        <h3>Crear/Editar Laboratorio</h3>
+                        <form id="laboratorioForm">
+                            <input type="hidden" id="laboratorioId">
+                            <div class="form-group">
+                                <label for="laboratorioNombre">Nombre</label>
+                                <input type="text" class="form-control" id="laboratorioNombre" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="laboratorioCodigo">Código</label>
+                                <input type="text" class="form-control" id="laboratorioCodigo" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="laboratorioGrupos">Grupos Asignados</label>
+                                <select multiple class="form-control" id="laboratorioGrupos">
+                                    <!-- Options will be loaded by JS -->
+                                </select>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="laboratorioActivo" checked>
+                                <label class="form-check-label" for="laboratorioActivo">
+                                    Activo
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Guardar</button>
+                            <button type="button" class="btn btn-secondary" id="cancelEditLabBtn" style="display:none;">Cancelar</button>
+                        </form>
+                    </div>
+                    <div class="col-md-8">
+                        <h3>Laboratorios Existentes</h3>
+                        <table class="table table-striped">
+                            <thead><tr><th>ID</th><th>Nombre</th><th>Código</th><th>Grupos</th><th>Activo</th><th>Acciones</th></tr></thead>
+                            <tbody id="laboratoriosTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items Tab -->
+            <div class="tab-pane fade" id="items" role="tabpanel">
+                <div class="row mt-3">
+                    <div class="col-md-4">
+                        <h3>Agregar/Editar Item</h3>
+                        <div class="form-group">
+                            <label for="itemLabSelector">Seleccionar Laboratorio</label>
+                            <select class="form-control" id="itemLabSelector"></select>
+                        </div>
+                        <form id="itemForm" style="display:none;">
+                            <input type="hidden" id="itemId">
+                            <div class="form-group">
+                                <label for="itemNombre">Nombre del Archivo</label>
+                                <input type="text" class="form-control" id="itemNombre" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Guardar Item</button>
+                             <button type="button" class="btn btn-secondary" id="cancelEditItemBtn" style="display:none;">Cancelar</button>
+                        </form>
+                    </div>
+                    <div class="col-md-8">
+                        <h3>Items del Laboratorio</h3>
+                        <table class="table table-striped">
+                            <thead><tr><th>ID</th><th>Nombre Archivo</th><th>Acciones</th></tr></thead>
+                            <tbody id="itemsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Revisar Tab -->
+            <div class="tab-pane fade" id="revisar" role="tabpanel">
+                <div class="form-row align-items-end mt-3">
+                    <div class="form-group col-md-4">
+                        <label for="revisarLabSelector">Seleccionar Laboratorio</label>
+                        <select class="form-control" id="revisarLabSelector"></select>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="revisarGroupSelector">Seleccionar Grupo</label>
+                        <select class="form-control" id="revisarGroupSelector"></select>
+                    </div>
+                </div>
+                <table class="table table-striped mt-3">
+                    <thead><tr><th>Estudiante</th><th>Código</th><th>Archivos Subidos</th><th>Nota</th><th>Acciones</th></tr></thead>
+                    <tbody id="revisarTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="../../frontend/js/common.js"></script>
+    <script src="../js/laboratorio_rest.js"></script>
+    <script src="../js/laboratorio_frontend.js"></script>
+</body>
+</html>

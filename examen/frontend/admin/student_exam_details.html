@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle de Respuestas del Estudiante</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+    <div class="container mt-4">
+        <h2 id="studentExamDetailsTitle"></h2>
+        <div id="studentInfo">
+            <!-- Student information will be loaded here -->
+        </div>
+        <hr>
+        <div id="detailedAnswers">
+            <!-- Detailed answers will be loaded here -->
+        </div>
+        <h3 class="mt-4">Puntaje Total: <span id="totalScore"></span></h3>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="../js/config.json"></script>
+    <script src="../js/env.json"></script>
+    <script>
+        $(document).ready(function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const studentId = urlParams.get('student_id');
+            const examId = urlParams.get('exam_id');
+
+            if (!studentId || !examId) {
+                $('#studentExamDetailsTitle').text('Error: Student ID or Exam ID missing.');
+                return;
+            }
+
+            const API_URL = window.API_URL; // From config.json
+            const token = localStorage.getItem('jwtToken');
+
+            if (!token) {
+                alert('No autorizado. Por favor, inicie sesión.');
+                window.close(); // Close the tab if not authorized
+                return;
+            }
+
+            let totalScore = 0;
+
+            // Fetch student information
+            $.ajax({
+                url: `${API_URL}/results_api.php?action=getStudentInfo&student_id=${studentId}`,
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                success: function(response) {
+                    if (response) {
+                        $('#studentExamDetailsTitle').text(`Detalle de Respuestas para ${response.nombre}`);
+                        $('#studentInfo').html(`
+                            <p><strong>Código:</strong> ${response.codigo}</p>
+                            <p><strong>ID de Estudiante:</strong> ${response.id}</p>
+                        `);
+                    } else {
+                        $('#studentInfo').text('No se pudo cargar la información del estudiante.');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error fetching student info:', error);
+                    $('#studentInfo').text('Error al cargar la información del estudiante.');
+                }
+            });
+
+            // Fetch detailed answers
+            $.ajax({
+                url: `${API_URL}/results_api.php?action=getStudentDetailedAnswers&student_id=${studentId}&exam_id=${examId}`,
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                success: function(response) {
+                    const detailedAnswersDiv = $('#detailedAnswers');
+                    if (response && response.length > 0) {
+                        response.forEach(answer => {
+                            const isCorrect = answer.is_correct == 1; // MySQL BOOLEAN is 0 or 1
+                            const points = isCorrect ? parseFloat(answer.question_weight) : 0;
+                            totalScore += points;
+
+                            let feedback = '';
+                            if (isCorrect) {
+                                feedback = `<span class="text-success">Correcta (+${points} puntos)</span>`;
+                            } else {
+                                feedback = `<span class="text-danger">Incorrecta (0 puntos)</span><br>
+                                            <small>Respuesta Correcta: ${answer.correct_answer_text}</small>`;
+                            }
+
+                            detailedAnswersDiv.append(`
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Pregunta: ${answer.pregunta}</h5>
+                                        <p class="card-text">Tu Respuesta: ${answer.student_answer}</p>
+                                        <p class="card-text">${feedback}</p>
+                                    </div>
+                                </div>
+                            `);
+                        });
+                        $('#totalScore').text(totalScore.toFixed(2));
+                    } else {
+                        detailedAnswersDiv.text('No se encontraron respuestas para este examen y estudiante.');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error fetching detailed answers:', error);
+                    $('#detailedAnswers').text('Error al cargar las respuestas detalladas.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+# DDEV local development environment
+.ddev/
+
+# Database snapshots
+db_snapshots/
+
+# Vendor directories
+vendor/
+
+# User-specific files
+pregunta11.txt

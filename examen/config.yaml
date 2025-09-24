@@ -1,0 +1,7 @@
+name: examen-implementacion
+type: php
+docroot: frontend
+php_version: "8.2"
+database:
+    type: mysql
+    version: "8.0"

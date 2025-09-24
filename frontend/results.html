@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados del Examen</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        body {
+            height: auto;
+            display: block;
+            justify-content: left;
+            align-items: start;
+        }
+        .correct-answer { color: green; font-weight: bold; }
+        .incorrect-answer { color: red; font-weight: bold; }
+        .question-card { margin-bottom: 20px; border: 1px solid #ddd; border-radius: 5px; padding: 15px; }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Resultados del Examen</h1>
+        <div id="student-info" class="alert alert-info"></div>
+        <div id="exam-results-container"></div>
+        <div id="total-score" class="alert alert-success mt-4"></div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="./js/results_display.js"></script>
+</body>
+</html>

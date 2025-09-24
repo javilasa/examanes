@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Examen</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 id="exam-title"></h1>
+        <h2 id="student-name"></h2>
+        <button id="start-exam">Iniciar</button>
+        <div id="exam-content" style="display: none;">
+            <div id="question-container">
+                <h3 id="question-text"></h3>
+                <div id="answers-container"></div>
+            </div>
+            <button id="next-question">Siguiente</button>
+            <button id="finish-exam" style="display: none;">Terminar</button>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

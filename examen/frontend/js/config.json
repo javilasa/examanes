@@ -1,0 +1,22 @@
+{
+    "apiBaseUrl": {
+        "development": "http://examenimplementation.ddev.site/backend/api/",
+        "production": "https://examenes.page.gd/backend/api/"
+    },
+    "dataBaseConn": {
+        "development": {
+            "host": "db",
+            "user": "root",
+            "password": "root",
+            "database": "examen_db"
+        },
+        "production": {
+            "host": "sql102.infinityfree.com",
+            "user": "if0_39881013",
+            "password": "aCq2Q6PBKBFMML",
+            "database": "if0_39881013_examenes"
+        }
+    }
+
+
+}
