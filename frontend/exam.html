@@ -1,11 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Examen</title>
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 80px;
+        }
+
+        button {
+            padding: 10px 25px;
+            font-size: 18px;
+            margin: 10px;
+            cursor: pointer;
+        }
+
+        .no-select * {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+        }
+
+        .no-drag img,
+        .no-drag p,
+        .no-drag div,
+        .no-drag span {
+            -webkit-user-drag: none;
+        }
+    </style>
 </head>
+
 <body>
     <div class="container">
         <h1 id="exam-title"></h1>
@@ -23,5 +52,76 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="js/security.js"></script>
     <script src="js/logic_exam.js?v=1.1"></script>
+
+
+    <script>
+        // ✅ Función para activar el modo examen
+        function activarModoExamen() {
+            document.body.classList.add("no-select", "no-drag");
+
+            // Evita selección de texto
+            document.addEventListener("selectstart", prevenir, true);
+
+            // Evita menú contextual (clic derecho)
+            document.addEventListener("contextmenu", prevenir, true);
+
+            // Evita copiar/pegar
+            document.addEventListener("copy", prevenir, true);
+            document.addEventListener("paste", prevenir, true);
+            document.addEventListener("cut", prevenir, true);
+
+            // Bloquea teclado
+            document.addEventListener("keydown", bloquearTeclas, true);
+
+            console.log("✅ Modo examen activado");
+        }
+
+        // 🚫 Función para desactivar el modo examen
+        function desactivarModoExamen() {
+            document.body.classList.remove("no-select", "no-drag");
+
+            document.removeEventListener("selectstart", prevenir, true);
+            document.removeEventListener("contextmenu", prevenir, true);
+            document.removeEventListener("copy", prevenir, true);
+            document.removeEventListener("paste", prevenir, true);
+            document.removeEventListener("cut", prevenir, true);
+            document.removeEventListener("keydown", bloquearTeclas, true);
+
+            console.log("⏹️ Modo examen desactivado");
+        }
+
+        // Función auxiliar: evita eventos
+        function prevenir(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+
+        // Función auxiliar: bloquea todas las teclas
+        function bloquearTeclas(e) {
+            // Bloquea F12, Ctrl+Shift+I (inspeccionar)
+            if (
+                e.key === "F12" ||
+                (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "i") ||
+                (e.ctrlKey && e.key.toLowerCase() === "u") ||
+                (e.ctrlKey && e.key.toLowerCase() === "c") ||
+                (e.ctrlKey && e.key.toLowerCase() === "s")
+            ) {
+                e.preventDefault();
+            }
+            // Bloquea todo lo demás
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+
+        // Ejemplo: manejo de respuestas
+        function respuesta(num) {
+            alert("Seleccionaste la opción " + num);
+        }
+
+        activarModoExamen();
+    </script>
 </body>
+
 </html>

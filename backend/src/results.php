@@ -56,6 +56,7 @@ function getStudentScoresByExamAndGroup($examId, $groupId) {
             g.id = ?
         GROUP BY
             s.id, s.nombre, s.codigo
+        ORDER BY s.nombre
     ";
 
     $stmt = $conn->prepare($sql);

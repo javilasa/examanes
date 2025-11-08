@@ -147,6 +147,11 @@ try {
             $response['data'] = getReviewData($data['id_laboratorio'], $data['id_grupo']);
             break;
 
+        case 'exportLaboratorios':
+            $labIds = $data['labIds'] ?? [];
+            $response['data'] = generateAndDownloadReport($labIds);
+            break;
+
         default:
             http_response_code(400);
             $response = ['message' => "Unknown action: {$action}"];

@@ -1,5 +1,6 @@
 <?php
 require_once '../src/config.php';
+require_once '../src/laboratorio.php';
 
 header("Content-Type: application/json");
 
@@ -27,7 +28,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($data['action']) && $data['action'] == 'get_lab_for_student') {
             getLabForStudent($conn, $data);
         }
+        if (isset($data['action']) && $data['action'] == 'get_laboratorios_files') {
+            $idLaboratorio = isset($data['idLaboratorio']) ? $data['idLaboratorio'] : null;
+            $result = getLaboratoriosResult($idLaboratorio);
+            echo json_encode($result);
+            exit;
+        }
     }
+    
 }
 
 function getLabForStudent($conn, $data) {

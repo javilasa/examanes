@@ -231,9 +231,9 @@ function createOrUpdateNota($id_laboratorio, $id_student, $nota) {
 
 function getReviewData($id_laboratorio, $id_grupo) {
     $conn = connect();
-    $stmt = $conn->prepare("
+    $stmt = $conn->prepare('
         SELECT s.id as student_id, s.nombre as student_name, s.codigo as student_code,
-               (SELECT GROUP_CONCAT(si.relative_path SEPARATOR ', ') 
+               (SELECT GROUP_CONCAT(si.relative_path SEPARATOR ", ") 
                 FROM student_items si JOIN items_laboratorio il ON si.id_item = il.id_item 
                 WHERE si.id_student = s.id AND il.id_laboratorio = ?) as submitted_files,
                ln.nota
@@ -241,7 +241,8 @@ function getReviewData($id_laboratorio, $id_grupo) {
         JOIN student_groups sg ON s.id = sg.student_id
         LEFT JOIN laboratorio_nota ln ON s.id = ln.id_student AND ln.id_laboratorio = ?
         WHERE sg.group_id = ?
-    ");
+        ORDER BY s.nombre
+    ');
     $stmt->bind_param("iii", $id_laboratorio, $id_laboratorio, $id_grupo);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -249,6 +250,167 @@ function getReviewData($id_laboratorio, $id_grupo) {
     $stmt->close();
     $conn->close();
     return $data;
+}
+
+
+function getLaboratoriosResult($idLaboratorio = null) {
+    $conn = connect();
+    $response = [];
+
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+    $host = $_SERVER['HTTP_HOST'];
+    $base_path = dirname(dirname(dirname($_SERVER['SCRIPT_NAME'])));
+    $site_url = rtrim($protocol . $host . $base_path, '/');
+
+
+    $lab_query = "SELECT id_laboratorio, codigo FROM laboratorios";
+    if ($idLaboratorio !== null) {
+        $lab_query .= " WHERE id_laboratorio = ?";
+    }
+    $stmt_lab = $conn->prepare($lab_query);
+    if ($idLaboratorio !== null) {
+        $stmt_lab->bind_param("i", $idLaboratorio);
+    }
+    $stmt_lab->execute();
+    $laboratorios = $stmt_lab->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt_lab->close();
+
+    foreach ($laboratorios as $laboratorio) {
+        $lab_id = $laboratorio['id_laboratorio'];
+        $lab_code = $laboratorio['codigo'];
+        $response[$lab_code] = [];
+
+        $stmt_group = $conn->prepare("SELECT g.id, g.nombre FROM groups g JOIN laboratorios_grupos lg ON g.id = lg.id_grupo WHERE lg.id_laboratorio = ?");
+        $stmt_group->bind_param("i", $lab_id);
+        $stmt_group->execute();
+        $grupos = $stmt_group->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt_group->close();
+
+        foreach ($grupos as $grupo) {
+            $group_id = $grupo['id'];
+            $group_code = $grupo['nombre'];
+            $response[$lab_code][$group_code] = [];
+
+            $stmt_student = $conn->prepare("SELECT s.id, s.codigo, s.nombre FROM students s JOIN student_groups sg ON s.id = sg.student_id WHERE sg.group_id = ?");
+            $stmt_student->bind_param("i", $group_id);
+            $stmt_student->execute();
+            $students = $stmt_student->get_result()->fetch_all(MYSQLI_ASSOC);
+            $stmt_student->close();
+
+            foreach ($students as $student) {
+                $student_id = $student['id'];
+                $student_code = $student['codigo'];
+                $student_name = $student['nombre'];
+                $response[$lab_code][$group_code][$student_code] = ['nombre_completo' => $student_name, 'archivos' => []];
+
+                $stmt_files = $conn->prepare("SELECT si.relative_path FROM student_items si JOIN items_laboratorio il ON si.id_item = il.id_item WHERE si.id_student = ? AND il.id_laboratorio = ?");
+                $stmt_files->bind_param("ii", $student_id, $lab_id);
+                $stmt_files->execute();
+                $files = $stmt_files->get_result()->fetch_all(MYSQLI_ASSOC);
+                $stmt_files->close();
+
+                foreach ($files as $file) {
+                    $response[$lab_code][$group_code][$student_code]['archivos'][] = $site_url . $file['relative_path'];
+                }
+            }
+        }
+    }
+
+    $conn->close();
+    return $response;
+}
+
+function getLaboratoriosDataForExport($labIds) {
+    $conn = connect();
+    if (empty($labIds)) {
+        $result = $conn->query("SELECT id_laboratorio FROM laboratorios");
+        $labIds = [];
+        while ($row = $result->fetch_assoc()) {
+            $labIds[] = $row['id_laboratorio'];
+        }
+    }
+
+    if (empty($labIds)) {
+        $conn->close();
+        return [];
+    }
+
+    $response = [];
+
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+    $host = $_SERVER['HTTP_HOST'];
+    $base_path = dirname(dirname(dirname($_SERVER['SCRIPT_NAME'])));
+    $site_url = rtrim($protocol . $host . $base_path, '/');
+
+    $placeholders = implode(',', array_fill(0, count($labIds), '?'));
+    $lab_query = "SELECT id_laboratorio, nombre, codigo, activo FROM laboratorios WHERE id_laboratorio IN ($placeholders)";
+    
+    $stmt_lab = $conn->prepare($lab_query);
+    $types = str_repeat('i', count($labIds));
+    $stmt_lab->bind_param($types, ...$labIds);
+    $stmt_lab->execute();
+    $laboratorios = $stmt_lab->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt_lab->close();
+
+    foreach ($laboratorios as $laboratorio) {
+        $lab_id = $laboratorio['id_laboratorio'];
+        $lab_data = $laboratorio;
+        $lab_data['grupos'] = [];
+
+        $stmt_group = $conn->prepare("SELECT g.id, g.nombre FROM groups g JOIN laboratorios_grupos lg ON g.id = lg.id_grupo WHERE lg.id_laboratorio = ?");
+        $stmt_group->bind_param("i", $lab_id);
+        $stmt_group->execute();
+        $grupos = $stmt_group->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt_group->close();
+
+        foreach ($grupos as $grupo) {
+            $group_id = $grupo['id'];
+            $group_data = $grupo;
+            $group_data['estudiantes'] = [];
+
+            $stmt_student = $conn->prepare("SELECT s.id, s.codigo, s.nombre FROM students s JOIN student_groups sg ON s.id = sg.student_id WHERE sg.group_id = ?");
+            $stmt_student->bind_param("i", $group_id);
+            $stmt_student->execute();
+            $students = $stmt_student->get_result()->fetch_all(MYSQLI_ASSOC);
+            $stmt_student->close();
+
+            foreach ($students as $student) {
+                $student_id = $student['id'];
+                $student_data = $student;
+                $student_data['archivos'] = [];
+
+                $stmt_files = $conn->prepare("SELECT si.relative_path, il.nombre_archivo FROM student_items si JOIN items_laboratorio il ON si.id_item = il.id_item WHERE si.id_student = ? AND il.id_laboratorio = ?");
+                $stmt_files->bind_param("ii", $student_id, $lab_id);
+                $stmt_files->execute();
+                $files = $stmt_files->get_result()->fetch_all(MYSQLI_ASSOC);
+                $stmt_files->close();
+
+                foreach ($files as $file) {
+                    $student_data['archivos'][] = ['nombre' => $file['nombre_archivo'], 'url' => $site_url . $file['relative_path']];
+                }
+                $group_data['estudiantes'][] = $student_data;
+            }
+            $lab_data['grupos'][] = $group_data;
+        }
+        $response[] = $lab_data;
+    }
+
+    $conn->close();
+    return $response;
+}
+
+function generateAndDownloadReport($labIds) {
+    $data = getLaboratoriosDataForExport($labIds);
+    $json_data = json_encode($data, JSON_PRETTY_PRINT);
+    $file_path = dirname(dirname(__DIR__)) . '/reporte.json';
+    file_put_contents($file_path, $json_data);
+
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+    $host = $_SERVER['HTTP_HOST'];
+    $base_path = dirname(dirname(dirname($_SERVER['SCRIPT_NAME'])));
+    $site_url = rtrim($protocol . $host . $base_path, '/');
+
+    return ['filePath' => $site_url . '/reporte.json'];
 }
 
 ?>
