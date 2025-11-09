@@ -1,14 +1,19 @@
 $(document).ready(function() {
-    // --- Password Protection ---
-    function checkPassword() {
-        const password = prompt("Please enter the password to access this page:", "");
-        if (password === "admin123") {
-            $('#main-content').show();
-            initializeApp(); // Initialize after successful login
-        } else {
-            alert("Incorrect password!");
-            $('body').html('<div class="container mt-5"><div class="alert alert-danger">Access Denied</div></div>');
-        }
+    // --- Login Logic ---
+    function setupLogin() {
+        $('#login-container').load('login.html', function() {
+            $('#loginForm').on('submit', function(e) {
+                e.preventDefault();
+                const password = $('#password').val();
+                if (password === 'admin123') {
+                    $('#login-container').hide();
+                    $('#main-content').show();
+                    initializeApp();
+                } else {
+                    alert('Incorrect password!');
+                }
+            });
+        });
     }
 
     // Global state
@@ -235,6 +240,53 @@ $(document).ready(function() {
         $(this).closest('tr').find('.btn-save-nota').removeClass('btn-success').addClass('btn-warning');
     });
 
+    // --- Exportar Laboratorios Tab Logic ---
+    function renderLaboratoriosExportList(labs) {
+        const $list = $('#laboratorios-export-list').empty();
+        if (!labs || labs.length === 0) {
+            $list.html('<p>No hay laboratorios disponibles.</p>');
+            return;
+        }
+
+        const labHtml = labs.map(lab => `
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="${lab.id_laboratorio}" id="lab-export-${lab.id_laboratorio}">
+                <label class="form-check-label" for="lab-export-${lab.id_laboratorio}">
+                    ${lab.nombre}
+                </label>
+            </div>
+        `).join('');
+
+        $list.html(labHtml);
+    }
+
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+        const target = $(e.target).attr("href"); // activated tab
+        if (target === '#exportar-laboratorios') {
+            renderLaboratoriosExportList(allLabs);
+        }
+    });
+
+    $(document).on('click', '#exportarLabsBtn', function() {
+        const selectedLabs = $('#laboratorios-export-list input:checked').map(function() {
+            return $(this).val();
+        }).get();
+
+        exportLaboratorios(selectedLabs).done(function(response) {
+            if (response.data && response.data.filePath) {
+                const link = document.createElement('a');
+                link.href = response.data.filePath;
+                link.download = 'reporte.json';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                alert('El reporte ha sido generado y la descarga ha comenzado.');
+            } else {
+                alert('Error al generar el reporte. No se encontró la ruta del archivo.');
+            }
+        });
+    });
+
     // --- Initial Load ---
-    checkPassword();
+    setupLogin();
 });

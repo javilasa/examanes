@@ -90,3 +90,14 @@ function createOrUpdateNota(labId, studentId, nota) {
         data: JSON.stringify({ action: 'createOrUpdateNota', id_laboratorio: labId, id_student: studentId, nota: nota }), error: handleAjaxError
     });
 }
+
+function exportLaboratorios(labIds) {
+    return $.ajax({
+        url: laboratorioApiUrl(),
+        type: 'POST',
+        headers: getAuthHeaders(),
+        contentType: 'application/json',
+        data: JSON.stringify({ action: 'exportLaboratorios', labIds: labIds }),
+        error: handleAjaxError
+    });
+}
