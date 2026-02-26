@@ -1,0 +1,40 @@
+name: 🚀 Desplegar a InfinityFree
+
+# Controla cuándo se ejecutará la acción
+on:
+  # Se activa cuando hay un 'push' a la rama 'main' (o 'master')
+  push:
+    branches: [ "main" ]  # Cambia "main" por "master" si tu rama principal se llama así
+
+jobs:
+  despliegue-ftp:
+    name: 📂 Subiendo archivos...
+    runs-on: ubuntu-latest  # El sistema operativo que usará el "robot"
+
+    steps:
+      # Paso 1: Obtener el código del repositorio
+      - name: Obtener código
+        uses: actions/checkout@v4
+
+      # ------------------- IMPORTANTE -------------------
+      # SI TU SITIO ES ESTÁTICO (solo HTML, CSS, JS) O PHP, BORRA LOS PASOS 2 y 3.
+      # SOLO NECESITAS ESTOS PASOS SI TU PROYECTO USA UN FRAMEWORK (React, Vue, etc.)
+      # QUE NECESITA SER "CONSTRUIDO" PARA GENERAR LOS ARCHIVOS FINALES.
+      # ---------------------------------------------------
+
+      # Paso 4: Subir los archivos a InfinityFree por FTP
+      - name: Subir archivos por FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4  # La acción que usaremos [citation:8]
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          # local-dir: La carpeta que quieres subir.
+          # Si tu proyecto es estático y tu index.html está en la raíz, pon "./"
+          # Si tu proyecto se construyó y generó una carpeta 'dist', pon "./dist/"
+          local-dir: "./"  # <-- ¡CAMBIA ESTO SEGÚN TU PROYECTO!
+          server-dir: ${{ secrets.REMOTE_DIR }}
+          # dangerous-clean-slate: En la PRIMERA subida, pon 'true' para borrar archivos viejos.
+          # Después de la primera subida, cámbialo a 'false' para evitar borrar cosas por error.
+          dangerous-clean-slate: false
