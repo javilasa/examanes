@@ -1,4 +1,4 @@
-// ExamenImplementation/frontend/js/questions.js
+let questionsData = [];
 
 function loadQuestions() {
     $('#questions').html(`<h2>Preguntas</h2>`);
@@ -38,6 +38,7 @@ function loadQuestions() {
                 xhr.setRequestHeader('Authorization', 'Bearer ' + window.common.token);
             },
             success: function(questions) {
+                questionsData = questions;
                 let tableContent = '<table class="table"><thead><tr><th>ID</th><th>Pregunta</th><th>Peso</th><th>Acciones</th></tr></thead><tbody>';
                 questions.forEach(question => {
                     tableContent += `<tr>
@@ -45,7 +46,7 @@ function loadQuestions() {
                         <td>${question.pregunta}</td>
                         <td>${question.peso}</td>
                         <td>
-                            <button class="btn btn-sm btn-info edit-question" data-id="${question.id}" data-pregunta="${question.pregunta}" data-peso="${question.peso}">Editar</button>
+                            <button class="btn btn-sm btn-info edit-question" data-id="${question.id}" data-peso="${question.peso}">Editar</button>
                             <button class="btn btn-sm btn-danger delete-question" data-id="${question.id}">Eliminar</button>
                         </td>
                     </tr>`;
@@ -65,9 +66,13 @@ function loadQuestions() {
     });
 
     $('#questions').on('click', '.edit-question', function() {
-        $('#question-id').val($(this).data('id'));
-        $('#question-pregunta').val($(this).data('pregunta'));
-        $('#question-peso').val($(this).data('peso'));
+        const questionId = $(this).data('id');
+        const question = questionsData.find(q => q.id == questionId);
+        if (question) {
+            $('#question-id').val(question.id);
+            $('#question-pregunta').val(question.pregunta);
+            $('#question-peso').val(question.peso);
+        }
     });
 
     $('#questions').on('click', '#cancel-edit-question', function() {

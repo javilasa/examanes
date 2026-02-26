@@ -1,4 +1,4 @@
-// ExamenImplementation/frontend/js/answers.js
+let answersData = [];
 
 function loadAnswers() {
     $('#answers').html(`<h2>Respuestas</h2>`);
@@ -67,6 +67,7 @@ function loadAnswers() {
                 xhr.setRequestHeader('Authorization', 'Bearer ' + window.common.token);
             },
             success: function(answers) {
+                answersData = answers;
                 let tableContent = '<table class="table"><thead><tr><th>ID</th><th>Respuesta</th><th>Correcta</th><th>Acciones</th></tr></thead><tbody>';
                 answers.forEach(answer => {
                     tableContent += `<tr>
@@ -74,7 +75,7 @@ function loadAnswers() {
                         <td>${answer.respuesta}</td>
                         <td>${answer.es_correcta ? 'Sí' : 'No'}</td>
                         <td>
-                            <button class="btn btn-sm btn-info edit-answer" data-id="${answer.id}" data-respuesta="${answer.respuesta}" data-es_correcta="${answer.es_correcta}">Editar</button>
+                            <button class="btn btn-sm btn-info edit-answer" data-id="${answer.id}" data-es_correcta="${answer.es_correcta}">Editar</button>
                             <button class="btn btn-sm btn-danger delete-answer" data-id="${answer.id}">Eliminar</button>
                         </td>
                     </tr>`;
@@ -94,9 +95,79 @@ function loadAnswers() {
     });
 
     $('#answers').on('click', '.edit-answer', function() {
-        $('#answer-id').val($(this).data('id'));
-        $('#answer-respuesta').val($(this).data('respuesta'));
-        $('#answer-es-correcta').prop('checked', $(this).data('es_correcta'));
+        const answerId = $(this).data('id');
+        const answer = answersData.find(a => a.id == answerId);
+        if (answer) {
+            $('#answer-id').val(answer.id);
+            $('#answer-respuesta').val(answer.respuesta);
+            $('#answer-es-correcta').prop('checked', answer.es_correcta);
+        }
+    });
+
+    $('#answers').on('click', '#cancel-edit-answer', function() {
+        $('#answer-id').val('');
+        $('#answer-form')[0].reset();
+    });
+
+    $('#answers').on('submit', '#answer-form', function(e) {
+        e.preventDefault();
+        const id = $('#answer-id').val();
+        const question_id = $('#question-select').val();
+        const respuesta = $('#answer-respuesta').val();
+        const es_correcta = $('#answer-es-correcta').is(':checked') ? 1 : 0;
+        const isUpdate = id ? true : false;
+        const type = 'POST'; // Always use POST
+        let data = { question_id, respuesta, es_correcta };
+
+        if (isUpdate) {
+            data.id = id;
+            data._method = 'PUT'; // Spoof PUT method
+            delete data.question_id; // Not needed for update
+        }
+
+        const submitButton = $('#answer-form button[type="submit"]');
+        submitButton.prop('disabled', true);
+
+        console.log("Sending AJAX request to create answer...");
+
+        $.ajax({
+            url: window.common.answerApiUrl(),
+            type: type,
+            contentType: 'application/json',
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader('Authorization', 'Bearer ' + window.common.token);
+            },
+            data: JSON.stringify(data),
+            success: function() {
+                console.log("AJAX request for answer creation completed (success).");
+                $('#question-select').trigger('change');
+                submitButton.prop('disabled', false);
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX request for answer creation completed (error):", status, error, xhr.responseText);
+                submitButton.prop('disabled', false);
+            }
+        });
+    });
+
+    $('#answers').on('click', '.delete-answer', function() {
+        if (!confirm('¿Está seguro de que desea eliminar esta respuesta?')) return;
+        const id = $(this).data('id');
+        $.ajax({
+            url: window.common.answerApiUrl(),
+            type: 'POST',
+            contentType: 'application/json',
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader('Authorization', 'Bearer ' + window.common.token);
+            },
+            data: JSON.stringify({ id: id, _method: 'DELETE' }), // Spoof DELETE method
+            success: function() {
+                $('#question-select').trigger('change');
+            },
+            error: function(xhr, status, error) {
+                console.error("Error deleting answer:", status, error, xhr.responseText);
+            }
+        });
     });
 
     $('#answers').on('click', '#cancel-edit-answer', function() {
