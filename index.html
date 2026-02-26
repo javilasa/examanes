@@ -1,1 +1,59 @@
-HOLA MUNDO!
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenido</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .btn {
+            text-decoration: none;
+            color: white;
+            background-color: #007bff;
+            padding: 15px 30px;
+            border-radius: 5px;
+            font-size: 18px;
+            margin: 0 10px;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bienvenido</h1>
+        <p>Seleccione a dónde desea ingresar:</p>
+        <div>
+            <a href="/frontend" class="btn">Exámenes</a>
+            <a href="/laboratorios" class="btn btn-secondary">Laboratorios</a>
+        </div>
+    </div>
+</body>
+</html>

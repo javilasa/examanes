@@ -1,13 +1,18 @@
 // ExamenImplementation/frontend/js/results_display.js
 
 $(document).ready(function () {
-    const urlParams = new URLSearchParams(window.location.search);
-    const studentId = urlParams.get('student_id');
-    const examId = urlParams.get('exam_id');
+    const studentId = sessionStorage.getItem('student_id');
+    const examId = sessionStorage.getItem('exam_id');
 
     console.log(`results.html - Student ID: ${studentId}, Exam ID: ${examId}`);
 
     let apiBaseUrl;
+
+    function clearSessionStorage() {
+        sessionStorage.removeItem('student_id');
+        sessionStorage.removeItem('exam_id');
+        console.log('Session storage cleared for student and exam IDs.');
+    }
 
     // Fetch API base URL from config.json
     $.getJSON('./js/env.json', function (env) {
@@ -22,6 +27,7 @@ $(document).ready(function () {
                 loadDetailedResults(studentId, examId);
             } else {
                 $('#exam-results-container').html('<div class="alert alert-danger">Faltan parámetros de estudiante o examen.</div>');
+                clearSessionStorage();
             }
         }).fail(function () {
             console.error("Error loading config.json");
@@ -32,6 +38,7 @@ $(document).ready(function () {
                 loadDetailedResults(studentId, examId);
             } else {
                 $('#exam-results-container').html('<div class="alert alert-danger">Faltan parámetros de estudiante o examen.</div>');
+                clearSessionStorage();
             }
         });
 
@@ -47,6 +54,7 @@ $(document).ready(function () {
                 loadDetailedResults(studentId, examId);
             } else {
                 $('#exam-results-container').html('<div class="alert alert-danger">Faltan parámetros de estudiante o examen.</div>');
+                clearSessionStorage();
             }
         });
     });
@@ -118,10 +126,12 @@ $(document).ready(function () {
                 } else {
                     $('#exam-results-container').html('<div class="alert alert-warning">' + (response.message || 'No se encontraron resultados detallados para este estudiante y examen.') + '</div>');
                 }
+                clearSessionStorage();
             },
             error: function (xhr, status, error) {
                 console.error("results.html - Error loading detailed results:", status, error, xhr.responseText);
                 $('#exam-results-container').html('<div class="alert alert-danger">Error al cargar los resultados detallados.</div>');
+                clearSessionStorage();
             }
         });
     }

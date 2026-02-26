@@ -17,6 +17,7 @@ $(document).ready(function () {
     const startExamBtn = $('#start-exam');
     const examTitleElem = $('#exam-title');
     const studentNameElem = $('#student-name');
+    const questionCounterElem = $('#question-counter');
 
     if (!examId || !studentCode) {
         alert('Error: Exam ID or Student Code not provided.');
@@ -105,6 +106,11 @@ $(document).ready(function () {
             selectedAnswerId = null; // Reset selected answer for new question
             nextQuestionBtn.prop('disabled', true); // Disable next button until an answer is selected
 
+            const answeredCount = currentQuestionIndex;
+            const totalCount = questions.length;
+            const remainingCount = totalCount - answeredCount;
+            questionCounterElem.text(`Respondidas: ${answeredCount} | Faltantes: ${remainingCount}`);
+
             question.answers.forEach(answer => {
                 console.log('Current Answer:', answer); // Added console log
                 const answerDiv = $('<div>');
@@ -132,6 +138,7 @@ $(document).ready(function () {
             window.examActive = false; // Exam is no longer active
             questionTextElem.text('Has completado el examen.');
             answersContainerElem.empty();
+            questionCounterElem.text('');
             nextQuestionBtn.hide();
             finishExamBtn.show();
         }
@@ -176,8 +183,29 @@ $(document).ready(function () {
 
     finishExamBtn.on('click', function() {
         window.examActive = false; // Exam is no longer active
-        // Redirect to results page, passing exam_id and student_id
-        window.location.href = `results.html?exam_id=${examId}&student_id=${studentId}`;
+        
+        // Create a form to POST data to the results page
+        const form = $('<form>', {
+            action: 'results.php',
+            method: 'POST',
+            style: 'display: none;'
+        });
+
+        // Add student_id and exam_id as hidden inputs
+        form.append($('<input>', {
+            type: 'hidden',
+            name: 'student_id',
+            value: studentId
+        }));
+        form.append($('<input>', {
+            type: 'hidden',
+            name: 'exam_id',
+            value: examId
+        }));
+
+        // Append the form to the body and submit it
+        $('body').append(form);
+        form.submit();
     });
 
     function shuffleArray(array) {
