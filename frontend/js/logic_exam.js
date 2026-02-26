@@ -8,6 +8,9 @@ $(document).ready(function () {
     let currentQuestionIndex = 0;
     let studentId = null;
     let selectedAnswerId = null;
+    
+    // Nueva variable para controlar múltiples envíos
+    let isSubmitting = false;
 
     const questionTextElem = $('#question-text');
     const answersContainerElem = $('#answers-container');
@@ -34,7 +37,6 @@ $(document).ready(function () {
 
     startExamBtn.on('click', function() {
         startExamBtn.hide();
-        // examContentElem.show(); // Removed: will be shown conditionally in fetchExamQuestions
         fetchExamQuestions(examId);
     });
 
@@ -97,6 +99,9 @@ $(document).ready(function () {
     }
 
     function displayQuestion() {
+        // Resetear el estado de envío al mostrar nueva pregunta
+        isSubmitting = false;
+        
         if (currentQuestionIndex < questions.length) {
             window.examActive = true; // Exam is active while displaying questions
             const question = questions[currentQuestionIndex];
@@ -104,7 +109,13 @@ $(document).ready(function () {
             questionTextElem.html(question.pregunta);
             answersContainerElem.empty();
             selectedAnswerId = null; // Reset selected answer for new question
+            
+            // Restaurar el botón a su estado inicial
             nextQuestionBtn.prop('disabled', true); // Disable next button until an answer is selected
+            nextQuestionBtn.text(currentQuestionIndex === questions.length - 1 ? 'Terminar Examen' : 'Siguiente');
+            
+            // Asegurar que los radios estén habilitados
+            $('input[name="answer"]').prop('disabled', false);
 
             const answeredCount = currentQuestionIndex;
             const totalCount = questions.length;
@@ -119,7 +130,10 @@ $(document).ready(function () {
 
                 radioBtn.on('change', function() {
                     selectedAnswerId = $(this).val();
-                    nextQuestionBtn.prop('disabled', false); // Enable next button
+                    // Solo habilitar el botón si no está en proceso de envío
+                    if (!isSubmitting) {
+                        nextQuestionBtn.prop('disabled', false);
+                    }
                 });
 
                 answerDiv.append(radioBtn, label);
@@ -144,12 +158,38 @@ $(document).ready(function () {
         }
     }
 
-    function saveAnswer() {
+    // Manejador del botón Siguiente/Terminar con protección anti-múltiples clics
+    nextQuestionBtn.on('click', function() {
+        // Prevenir múltiples clics
+        if (isSubmitting) {
+            console.log('Ya se está procesando una solicitud...');
+            return;
+        }
+        
+        // Validar que haya una respuesta seleccionada
         if (!selectedAnswerId) {
             alert('Por favor, selecciona una respuesta antes de continuar.');
             return;
         }
+        
+        // Marcar como enviando
+        isSubmitting = true;
+        
+        // Deshabilitar el botón inmediatamente
+        nextQuestionBtn.prop('disabled', true);
+        
+        // Guardar el texto original y cambiar a "Guardando..." con spinner
+        const originalText = nextQuestionBtn.text();
+        nextQuestionBtn.html('<span class="button-spinner"></span> Guardando...');
+        
+        // Deshabilitar todos los radios para evitar cambios durante el envío
+        $('input[name="answer"]').prop('disabled', true);
+        
+        // Llamar a la función de guardado
+        saveAnswer(originalText);
+    });
 
+    function saveAnswer(originalButtonText) {
         const currentQuestion = questions[currentQuestionIndex];
         const apiUrl = '../backend/api/public_exam_api.php';
 
@@ -165,21 +205,40 @@ $(document).ready(function () {
                 answer_id: selectedAnswerId
             }),
             dataType: 'json',
+            timeout: 30000, // Timeout de 30 segundos
             success: function (response) {
                 if (response.success) {
                     currentQuestionIndex++;
                     displayQuestion();
                 } else {
-                    alert('Error saving answer: ' + (response.message || 'Unknown error'));
+                    handleSaveError(response.message || 'Error desconocido', originalButtonText);
                 }
             },
             error: function (xhr, status, error) {
-                alert('AJAX Error saving answer: ' + status + ' ' + error + ' - ' + xhr.responseText);
+                let errorMsg = 'Error al guardar: ';
+                if (status === 'timeout') {
+                    errorMsg += 'La conexión tardó demasiado. Por favor, intenta de nuevo.';
+                } else if (status === 'parsererror') {
+                    errorMsg += 'Error al procesar la respuesta del servidor.';
+                } else if (status === 'error') {
+                    errorMsg += 'Problema de conexión. Verifica tu internet.';
+                } else {
+                    errorMsg += error;
+                }
+                handleSaveError(errorMsg, originalButtonText);
             }
         });
     }
 
-    nextQuestionBtn.on('click', saveAnswer);
+    function handleSaveError(errorMsg, originalButtonText) {
+        alert(errorMsg);
+        
+        // Rehabilitar UI en caso de error
+        isSubmitting = false;
+        nextQuestionBtn.prop('disabled', false);
+        nextQuestionBtn.text(originalButtonText);
+        $('input[name="answer"]').prop('disabled', false);
+    }
 
     finishExamBtn.on('click', function() {
         window.examActive = false; // Exam is no longer active
