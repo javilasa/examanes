@@ -75,12 +75,14 @@ try {
             echo json_encode(getExams());
             break;
         case 'POST':
-            createExam($data['nombre'], $data['code'], $data['groups'] ?? []);
+            $display = isset($data['display']) ? (int)$data['display'] : 0;
+            createExam($data['nombre'], $data['code'], $display, $data['groups'] ?? []);
             echo json_encode(["message" => "Exam created"]);
             break;
         case 'PUT':
             $vigente = isset($data['vigente']) ? (int)$data['vigente'] : 0;
-            updateExam($data['id'], $data['nombre'], $data['code'], $vigente, $data['groups'] ?? []);
+            $display = isset($data['display']) ? (int)$data['display'] : 0;
+            updateExam($data['id'], $data['nombre'], $data['code'], $vigente, $display, $data['groups'] ?? []);
             echo json_encode(["message" => "Exam updated"]);
             break;
         case 'DELETE':

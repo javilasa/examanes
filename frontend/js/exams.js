@@ -17,6 +17,7 @@ function loadExams() {
                     <td>${exam.nombre}</td>
                     <td>${exam.code}</td>
                     <td>${exam.vigente == '0' ? 'NO' : 'SI'}</td>
+                    <td>${exam.display == '0' ? 'NO' : 'SI'}</td>
                     <td>${groupNames}</td>
                     <td>
                         <button class="btn btn-sm btn-info edit-exam" 
@@ -24,6 +25,7 @@ function loadExams() {
                             data-nombre="${exam.nombre}" 
                             data-code="${exam.code}" 
                             data-vigente="${exam.vigente}"
+                            data-display="${exam.display}"
                             data-groups='${JSON.stringify(exam.groups.map(g => g.id))}'>Editar</button>
                         <button class="btn btn-sm btn-danger delete-exam" data-id="${exam.id}">Eliminar</button>
                     </td>
@@ -70,12 +72,14 @@ $('#exams').on('click', '.edit-exam', function() {
     const examNombre = $(this).data('nombre');
     const examCode = $(this).data('code');
     const examVigente = $(this).data('vigente');
+    const examDisplay = $(this).data('display');
     const examGroups = $(this).data('groups'); // This will be an array of group IDs
 
     $('#examId').val(examId);
     $('#examName').val(examNombre);
     $('#examCode').val(examCode);
     $('#examVigente').prop('checked', Boolean(parseInt(examVigente)));
+    $('#examDisplay').prop('checked', Boolean(parseInt(examDisplay)));
 
     // Pre-select groups in the dropdown
     $('#examGroups option').each(function() {
@@ -103,6 +107,7 @@ $('#exams').on('submit', '#examForm', function(e) {
     const nombre = $('#examName').val();
     const code = $('#examCode').val();
     const vigente = $('#examVigente').is(':checked') ? 1 : 0;
+    const display = $('#examDisplay').is(':checked') ? 1 : 0;
     const selectedGroupIds = $('#examGroups').val().map(id => parseInt(id)); // Get selected group IDs as integers
 
     const isUpdate = id ? true : false;
@@ -111,6 +116,7 @@ $('#exams').on('submit', '#examForm', function(e) {
         nombre: nombre,
         code: code,
         vigente: vigente,
+        display: display,
         groups: selectedGroupIds
     };
 

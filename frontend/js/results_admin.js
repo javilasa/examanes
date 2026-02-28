@@ -122,6 +122,29 @@ function loadStudentsResults(examId, groupId) {
     $('#results').on('click', '.view-student-results', function() {
         const studentId = $(this).data('student-id');
         const examId = $(this).data('exam-id');
-        // Open new tab with detailed results page
-        window.open(`../results.html?student_id=${studentId}&exam_id=${examId}`, '_blank');
+        
+        // Create a form to POST data to the results page
+        const form = $('<form>', {
+            action: '../results.php',
+            method: 'POST',
+            target: '_blank', // Open in a new tab
+            style: 'display: none;'
+        });
+
+        // Add student_id and exam_id as hidden inputs
+        form.append($('<input>', {
+            type: 'hidden',
+            name: 'student_id',
+            value: studentId
+        }));
+        form.append($('<input>', {
+            type: 'hidden',
+            name: 'exam_id',
+            value: examId
+        }));
+
+        // Append the form to the body and submit it
+        $('body').append(form);
+        form.submit();
+        form.remove(); // Clean up the form after submission
     });

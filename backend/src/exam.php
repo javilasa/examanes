@@ -5,10 +5,10 @@ require_once 'question.php'; // Include question functions
 require_once 'answer.php'; // Include answer functions
 
 // Create a new exam
-function createExam($nombre, $code, $groupIds) {
+function createExam($nombre, $code, $display, $groupIds) {
     $conn = connect();
-    $stmt = $conn->prepare("INSERT INTO exams (nombre, code) VALUES (?, ?)");
-    $stmt->bind_param("ss", $nombre, $code);
+    $stmt = $conn->prepare("INSERT INTO exams (nombre, code, display) VALUES (?, ?, ?)");
+    $stmt->bind_param("ssi", $nombre, $code, $display);
     $stmt->execute();
     $examId = $conn->insert_id; // Get the ID of the newly inserted exam
     $stmt->close();
@@ -34,7 +34,7 @@ function createExam($nombre, $code, $groupIds) {
 // Read all exams
 function getExams() {
     $conn = connect();
-    $result = $conn->query("SELECT id, nombre, code, vigente FROM exams"); // Explicitly select code
+    $result = $conn->query("SELECT id, nombre, code, vigente, display FROM exams"); // Explicitly select code
     $exams = [];
     while ($row = $result->fetch_assoc()) {
         $row['groups'] = getExamGroups($row['id']); // Get associated groups
@@ -45,11 +45,14 @@ function getExams() {
 }
 
 // Update an exam
-function updateExam($id, $nombre, $code, $vigente, $groupIds) {
+function updateExam($id, $nombre, $code, $vigente, $display, $groupIds) {
     $conn = connect();
     // Update exams table
-    $stmt = $conn->prepare("UPDATE exams SET nombre = ?, code = ?, vigente = ? WHERE id = ?");
-    $stmt->bind_param("ssii", $nombre, $code, $vigente, $id);
+    $sql = "UPDATE exams SET nombre = ?, code = ?, vigente = ?, display = ? WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    //echo $sql;
+    //exit(1);
+    $stmt->bind_param("ssiii", $nombre, $code, $vigente, $display, $id);
     $stmt->execute();
     $stmt->close();
 
@@ -104,6 +107,23 @@ function getExamByCode($examCode) {
     $conn = connect();
     $stmt = $conn->prepare("SELECT * FROM exams WHERE code = ? AND vigente = 1"); // Use code column
     $stmt->bind_param("s", $examCode); // Bind as string
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $exam = $result->fetch_assoc();
+    $stmt->close();
+
+    if ($exam) {
+        $exam['groups'] = getExamGroups($exam['id']); // Add associated groups
+    }
+
+    $conn->close();
+    return $exam;
+}
+
+function getExam($examId) {
+    $conn = connect();
+    $stmt = $conn->prepare("SELECT * FROM exams WHERE id = ?"); // Use code column
+    $stmt->bind_param("i", $examId); // Bind as string
     $stmt->execute();
     $result = $stmt->get_result();
     $exam = $result->fetch_assoc();

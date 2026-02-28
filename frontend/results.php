@@ -15,10 +15,12 @@ $finalScore = 0;
 
 if ($exam_id > 0 && $student_id > 0) {
     $data = getExamResults($student_id, $exam_id);
+
     if ($data && !empty($data['student'])) {
         $studentInfo = $data['student'];
         $examName = $data['exam_name'];
-        $results = $data['results'];
+        $displayExam = $data['display'];
+        $results = ($displayExam == 1) ? $data['results'] : [];
         $totalScore = $data['total_score'];
         $incidentCount = $data['incident_count'];
 
@@ -76,7 +78,7 @@ if ($exam_id > 0 && $student_id > 0) {
                                 <?php echo htmlspecialchars($result['respuesta_estudiante'] ?? 'No respondida'); ?>
                             </span>
                         </p>
-                        <?php if (!$result['es_correcta_estudiante']): ?>
+                        <?php if (!$result['es_correcta_estudiante'] && isset($result['respuesta_estudiante'])): ?>
                             <p>Respuesta correcta: <span class="correct-answer"><?php echo htmlspecialchars($result['respuesta_correcta']); ?></span></p>
                         <?php endif; ?>
                     </div>

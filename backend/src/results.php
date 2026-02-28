@@ -289,10 +289,13 @@ function getIncidentCount($studentId, $examId) {
 }
 
 function getExamResults($studentId, $examId) {
+    require_once 'exam.php';
     $studentInfo = getStudentInfo($studentId);
     $detailedAnswers = getStudentDetailedAnswers($studentId, $examId);
     $examName = getExamName($examId);
     $incidentCount = getIncidentCount($studentId, $examId);
+    $exam = getExam($examId);
+    $examDisplay = $exam['display'];
 
     $totalScore = 0;
     foreach ($detailedAnswers as $answer) {
@@ -306,7 +309,8 @@ function getExamResults($studentId, $examId) {
         "exam_name" => $examName,
         "results" => $detailedAnswers,
         "total_score" => $totalScore,
-        "incident_count" => $incidentCount
+        "incident_count" => $incidentCount,
+        "display" => $examDisplay
     ];
 }
 
