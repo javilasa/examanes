@@ -4,6 +4,7 @@ require_once '../backend/src/results.php';
 // Get exam_id and student_id from POST request
 $exam_id = isset($_POST['exam_id']) ? (int)$_POST['exam_id'] : 0;
 $student_id = isset($_POST['student_id']) ? (int)$_POST['student_id'] : 0;
+$isAdmin = isset($_POST['admon']) ? $_POST['admon'] : 0;
 
 $error_message = '';
 $studentInfo = null;
@@ -20,7 +21,8 @@ if ($exam_id > 0 && $student_id > 0) {
         $studentInfo = $data['student'];
         $examName = $data['exam_name'];
         $displayExam = $data['display'];
-        $results = ($displayExam == 1) ? $data['results'] : [];
+        
+        $results = ($displayExam == 1 || $isAdmin == 1 ) ? $data['results'] : [];
         $totalScore = $data['total_score'];
         $incidentCount = $data['incident_count'];
 
@@ -65,6 +67,11 @@ if ($exam_id > 0 && $student_id > 0) {
             <div class="alert alert-danger"><?php echo $error_message; ?></div>
         <?php elseif ($studentInfo): ?>
             <div id="student-info" class="alert alert-info">
+                 <?php if ($isAdmin): ?>
+                    <strong>IdExamen:</strong> <?php echo $exam_id; ?><br>
+                    <strong>IdEstudiante:</strong> <?php echo $student_id; ?><br>
+                <?php endif; ?>
+                
                 <strong>Estudiante:</strong> <?php echo htmlspecialchars($studentInfo['nombre']); ?><br>
                 <strong>Código:</strong> <?php echo htmlspecialchars($studentInfo['codigo']); ?>
             </div>
@@ -92,7 +99,9 @@ if ($exam_id > 0 && $student_id > 0) {
                 <strong>Puntaje Final:</strong> <?php echo number_format($finalScore, 2); ?>
             </div>
         <?php endif; ?>
-        <a href="/frontend/admin/index.html" class="btn btn-primary">Volver al inicio</a>
+
+        <a href="#" class="btn btn-primary" onclick="window.close(); return false;">Cerrar</a>
+        
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>

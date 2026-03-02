@@ -106,7 +106,7 @@ $(document).ready(function () {
             window.examActive = true; // Exam is active while displaying questions
             const question = questions[currentQuestionIndex];
             console.log('Current Question:', question); // Added console log
-            questionTextElem.html(question.pregunta);
+            questionTextElem.html("<pre>" + question.pregunta + "</pre>");
             answersContainerElem.empty();
             selectedAnswerId = null; // Reset selected answer for new question
             
@@ -126,7 +126,8 @@ $(document).ready(function () {
                 console.log('Current Answer:', answer); // Added console log
                 const answerDiv = $('<div class="answer-row">');
                 const radioBtn = $('<input type="radio" name="answer" id="answer-' + answer.id + '" value="' + answer.id + '">');
-                const label = $('<label for="answer-' + answer.id + '">').html(answer.respuesta);
+                const label = $('<label for="answer-' + answer.id + '">').html("<pre>" + answer.respuesta + "</pre>");
+                console.log('Answer:',answer.respuesta);
 
                 radioBtn.on('change', function() {
                     selectedAnswerId = $(this).val();

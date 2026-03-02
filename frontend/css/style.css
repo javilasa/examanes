@@ -162,3 +162,17 @@ button:hover {
         margin-right: 10px;
     }
 }
+
+#question-text {
+    word-wrap: break-word; /* Rompe palabras largas */
+    overflow-wrap: break-word; /* Alternativa moderna */
+    max-width: 100%; /* Asegura que no exceda el contenedor */
+    white-space: normal; /* Permite saltos de línea normales */
+}
+
+#question-text pre {
+    white-space: pre-wrap; /* Respeta espacios pero permite saltos */
+    font-family: inherit; /* Hereda la fuente del contenedor */
+    margin: 0; /* Elimina márgenes por defecto */
+    word-break: break-word; /* Rompe palabras si es necesario */
+}

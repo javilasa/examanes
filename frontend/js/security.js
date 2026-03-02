@@ -24,8 +24,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let apiBaseUrl;
     const urlParams = new URLSearchParams(window.location.search);
-    const studentId = urlParams.get('studentId');
-    const examId = urlParams.get('examId');
+    const studentId = urlParams.get('student_code');
+    const examId = urlParams.get('exam_id');
+
+    console.log('studentId:' + studentId);
+    console.log('examId:' + examId);
 
     function initializeSecurityFeatures() {
         //const debugMode = urlParams.get('debug') === 'true';
@@ -79,18 +82,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const incidentUrl =  '/backend/api/exam_incident_api.php';
-        const incidentData = {
-            student_id: studentId,
-            exam_id: examId,
-            incident_type: incidentType
-        };
 
         try {
+            const response = await fetch(incidentUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json' 
+                },
+                body: JSON.stringify({
+                    student_id: studentId,
+                    exam_id: examId,
+                    incident_type: incidentType
+                })
+            });
+            const data = await response.json();
+            if (!data.success) {
+                console.error('Error saving incident:', data.message);
+            }
+        } catch (error) {
+            console.error("Error saving incident:", error);
+        }
+
+        /*
+        try {
             if (incidentType === 'window_close' || incidentType === 'page_refresh') {
+                console.log('windows.close event' );
                 const blob = new Blob([JSON.stringify(incidentData)], { type: 'application/json; charset=utf-8' });
                 navigator.sendBeacon(incidentUrl, blob);
                 console.log(`security.js: Incident logged via sendBeacon: ${incidentType}`);
             } else {
+                console.log('windows.close event' );
                 const response = await fetch(incidentUrl, {
                     method: 'POST',
                     headers: {
@@ -108,6 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('security.js: Error logging incident:', error);
         }
+            */
     }
 
     // Load configuration to set apiBaseUrl

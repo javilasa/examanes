@@ -142,6 +142,11 @@ function loadStudentsResults(examId, groupId) {
             name: 'exam_id',
             value: examId
         }));
+        form.append($('<input>', {
+            type: 'hidden',
+            name: 'admon',
+            value: '1'
+        }));
 
         // Append the form to the body and submit it
         $('body').append(form);
