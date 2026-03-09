@@ -21,6 +21,7 @@ $(document).ready(function () {
     const examTitleElem = $('#exam-title');
     const studentNameElem = $('#student-name');
     const questionCounterElem = $('#question-counter');
+    const viewExamResultsBtn = $('#view-exam-results');
 
     if (!examId || !studentCode) {
         alert('Error: Exam ID or Student Code not provided.');
@@ -36,6 +37,7 @@ $(document).ready(function () {
     fetchStudentDetails(studentCode);
 
     startExamBtn.on('click', function() {
+        viewExamResultsBtn.hide();
         startExamBtn.hide();
         fetchExamQuestions(examId);
     });
@@ -50,6 +52,7 @@ $(document).ready(function () {
                 if (response.success && response.student) {
                     studentId = response.student.id;
                     studentNameElem.text(`Estudiante: ${response.student.nombre}`);
+                    fetchExamDetails(examId); // Call fetchExamDetails on success
                 } else {
                     alert('Error fetching student details: ' + (response.message || 'Unknown error'));
                     window.close();
@@ -58,6 +61,42 @@ $(document).ready(function () {
             error: function (xhr, status, error) {
                 alert('AJAX Error fetching student details: ' + status + ' ' + error);
                 window.close();
+            }
+        });
+    }
+
+    function fetchExamDetails(examId) {
+        startExamBtn.hide();
+
+        const apiUrl = `/backend/api/public_exam_api.php?action=getExamDetails&exam_id=${encodeURIComponent(examId)}`;
+        $.ajax({
+            url: apiUrl,
+            method: 'GET',
+            dataType: 'json',
+            success: function (response) {
+                if (response.success && response.exam) {
+                    if (response.exam.vigente == 1) {
+                       startExamBtn.show();
+                    }
+                    if (response.exam.display == 1) {
+                        viewExamResultsBtn.show();
+                        viewExamResultsBtn.on('click', function() {
+                            const form = $('<form>', {
+                                action: 'results.php',
+                                method: 'POST',
+                                style: 'display: none;'
+                            });
+                            form.append($('<input>', { type: 'hidden', name: 'student_id', value: studentId }));
+                            form.append($('<input>', { type: 'hidden', name: 'exam_id', value: examId }));
+                            $('body').append(form);
+                            form.submit();
+                        });
+                    }
+                }
+                // No alert on failure, as it's not critical if this fails
+            },
+            error: function (xhr, status, error) {
+                console.error('AJAX Error fetching exam details: ' + status + ' ' + error);
             }
         });
     }

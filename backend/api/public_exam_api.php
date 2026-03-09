@@ -46,6 +46,14 @@ try {
     switch ($method) {
         case 'GET':
             switch ($action) {
+                case 'getExamDetails':
+                    if (isset($_GET['exam_id'])) {
+                        $exam = getExam($_GET['exam_id']);
+                        echo json_encode($exam ? ["success" => true, "exam" => $exam] : ["success" => false, "message" => "Examen no encontrado."]);
+                    } else {
+                        echo json_encode(["success" => false, "message" => "Código de examen no proporcionado."]);
+                    }
+                    break;
                 case 'getExamByCode':
                     if (isset($_GET['code'])) {
                         $exam = getExamByCode($_GET['code']);
