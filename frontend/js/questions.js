@@ -57,7 +57,7 @@ function loadQuestions() {
                         <input type="hidden" id="question-id">
                         <div class="form-row">
                             <div class="col-md-6"><textarea id="question-pregunta" class="form-control" placeholder="Pregunta" required></textarea></div>
-                            <div class="col-md-2"><input type="number" step="0.1" id="question-peso" class="form-control" placeholder="Peso" required></div>
+                            <div class="col-md-2"><input type="number" step="0.0001" id="question-peso" class="form-control" placeholder="Peso" required></div>
                             <div class="col-md-4"><button type="submit" class="btn btn-primary">Guardar</button> <button type="button" class="btn btn-secondary" id="cancel-edit-question">Cancelar</button></div>
                         </div>
                     </form><hr>${tableContent}`);
